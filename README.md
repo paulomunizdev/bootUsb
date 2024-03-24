@@ -23,7 +23,7 @@ Here's how you can adapt the "How to Use" section for your `bootUsb` tool:
    ```   
 3. Run bootUsb:
    ```bash
-   ./bootUsb
+   sudo ./bootUsb
    ```
 ### Compiling the Source Code
 
