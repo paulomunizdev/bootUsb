@@ -1,42 +1,51 @@
 /*
  * Title:       bootUsb
- * Version:     0.0.1
+ * Version:     0.1.1
  * Author:      Paulo Muniz
  * GitHub:      https://github.com/paulomunizdev/bootUsb
  * Description: bootUsb is a C++ tool for creating bootable USB drives from ISO files.
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <string>
-#include <vector>
-#include <stdexcept>
+ #include <iostream>
+ #include <cstdlib>
+ #include <string>
+ #include <vector>
+ #include <stdexcept>
 
-// Function to list available disks directly from the system
-/*
- * @brief                  Function to list the available disks directly from the system using lsblk, along with their sizes.
- * @return std::vector<std::pair<std::string, std::string>>  A vector containing the names and sizes of available disks.
- */
-std::vector<std::pair<std::string, std::string>> listDisksFromSystem() {
-    std::vector<std::pair<std::string, std::string>> disks;
-    std::string command = "lsblk | grep disk | awk '{print $1, $4}'";
-    FILE* stream = popen(command.c_str(), "r");
-    if (stream) {
-        const int bufferSize = 256;
-        char buffer[bufferSize];
-        while (!feof(stream) && fgets(buffer, bufferSize, stream) != NULL) {
-            std::string bufferStr(buffer);
-            size_t pos = bufferStr.find_last_of(' ');
-            std::string diskName = bufferStr.substr(0, pos);
-            std::string diskSize = bufferStr.substr(pos + 1, bufferStr.size() - pos - 2);
-            disks.push_back(std::make_pair(diskName, diskSize));
-        }
-        pclose(stream);
-    } else {
-        throw std::runtime_error("Failed to execute lsblk command");
-    }
-    return disks;
-}
+ // Function to list available disks directly from the system using fdisk
+ /*
+  * @brief                  Function to list the available disks directly from the system using fdisk, along with their sizes.
+  * @return std::vector<std::pair<std::string, std::string>>  A vector containing the names and sizes of available disks.
+  */
+ std::vector<std::pair<std::string, std::string>> listDisksFromSystem() {
+     std::vector<std::pair<std::string, std::string>> disks;
+     std::string command = "fdisk -l | grep 'Disk /dev/' | grep -v '/dev/loop' | grep -v '/dev/ram' | cut -d' ' -f2 | cut -d':' -f1";
+     FILE* stream = popen(command.c_str(), "r");
+     if (stream) {
+         const int bufferSize = 256;
+         char buffer[bufferSize];
+         while (!feof(stream) && fgets(buffer, bufferSize, stream) != NULL) {
+             std::string diskName(buffer);
+             diskName.pop_back(); // Remove the trailing newline character
+             std::string sizeCommand = "fdisk -l " + diskName + " | grep Disk | cut -d' ' -f3,4";
+             FILE* sizeStream = popen(sizeCommand.c_str(), "r");
+             if (sizeStream) {
+                 char sizeBuffer[bufferSize];
+                 fgets(sizeBuffer, bufferSize, sizeStream);
+                 std::string diskSize(sizeBuffer);
+                 diskSize.pop_back(); // Remove the trailing newline character
+                 disks.push_back(std::make_pair(diskName, diskSize));
+                 pclose(sizeStream);
+             } else {
+                 throw std::runtime_error("Failed to execute fdisk command for disk size");
+             }
+         }
+         pclose(stream);
+     } else {
+         throw std::runtime_error("Failed to execute fdisk command");
+     }
+     return disks;
+ }
 
 // Function to choose a disk
 /*
