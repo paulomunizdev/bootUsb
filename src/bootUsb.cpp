@@ -80,57 +80,59 @@
      std::cin >> isoPath;
      return isoPath;
  }
+
  // Function to format the disk before creating a bootable USB drive
- /*
-  * @brief              Function to format the disk before creating a bootable USB drive.
-  * @param disk         The name of the disk to be formatted.
-  * @param fileSystem   The file system to be used for formatting (e.g., ext4, fat32).
-  * @return void
-  */
- void formatDisk(const std::string& disk, const std::string& fileSystem) {
-     try {
-         // Unmount the disk if it is mounted
-         std::string umountCommand = "sudo umount " + disk + "*";
-         int umountResult = system(umountCommand.c_str());
+/*
+ * @brief              Function to format the disk before creating a bootable USB drive.
+ * @param disk         The name of the disk to be formatted.
+ * @param fileSystem   The file system to be used for formatting (e.g., ext4, fat32).
+ * @return void
+ */
+void formatDisk(const std::string& disk, const std::string& fileSystem) {
+    try {
+        // Unmount the disk if it is mounted
+        std::string umountCommand = "sudo umount " + disk + "*";
+        int umountResult = system(umountCommand.c_str());
 
-         // Clear all signatures and partitions from the disk
-         std::string clearCommand = "sudo wipefs --all --force " + disk;
-         int clearResult = system(clearCommand.c_str());
-         if (clearResult != 0) {
-             throw std::runtime_error("Error clearing disk signatures and partitions.");
-         }
+        // Clear all signatures and partitions from the disk
+        std::string clearCommand = "sudo wipefs --all --force " + disk;
+        int clearResult = system(clearCommand.c_str());
+        if (clearResult != 0) {
+            throw std::runtime_error("Error clearing disk signatures and partitions.");
+        }
 
-         // Create a new partition table (msdos)
-         std::string partedCommand = "sudo parted -s " + disk + " mklabel msdos";
-         int partedResult = system(partedCommand.c_str());
-         if (partedResult != 0) {
-             throw std::runtime_error("Error creating a new partition table.");
-         }
+        // Create a new partition table (msdos)
+        std::string partedCommand = "sudo parted -s " + disk + " mklabel msdos";
+        int partedResult = system(partedCommand.c_str());
+        if (partedResult != 0) {
+            throw std::runtime_error("Error creating a new partition table.");
+        }
 
-         // Create a new primary partition spanning the whole disk
-         std::string mkpartCommand = "sudo parted -s " + disk + " mkpart primary 0% 100%";
-         int mkpartResult = system(mkpartCommand.c_str());
-         if (mkpartResult != 0) {
-             throw std::runtime_error("Error creating a new partition.");
-         }
+        // Create a new primary partition spanning the whole disk
+        std::string mkpartCommand = "sudo parted -s " + disk + " mkpart primary 0% 100%";
+        int mkpartResult = system(mkpartCommand.c_str());
+        if (mkpartResult != 0) {
+            throw std::runtime_error("Error creating a new partition.");
+        }
 
-         // Format the partition with the specified file system
-         std::string formatCommand;
-         if (fileSystem == "fat32") {
-             formatCommand = "sudo mkfs.vfat -n bootUsb " + disk + "1";
-         } else if (fileSystem == "ext4") {
-             formatCommand = "sudo mkfs.ext4 -L bootUsb " + disk + "1";
-         } else {
-             throw std::invalid_argument("Unsupported file system.");
-         }
-         int formatResult = system(formatCommand.c_str());
-         if (formatResult != 0) {
-             throw std::runtime_error("Error formatting the disk.");
-         }
-     } catch (const std::exception& e) {
-         std::cerr << e.what() << std::endl;
-     }
- }
+        // Format the partition with the specified file system
+        std::string formatCommand;
+        if (fileSystem == "fat32") {
+            formatCommand = "sudo mkfs.vfat -n bootUsb " + disk + "1";
+        } else if (fileSystem == "ext4") {
+            formatCommand = "sudo mkfs.ext4 -L bootUsb " + disk + "1";
+        } else {
+            throw std::invalid_argument("Unsupported file system.");
+        }
+        int formatResult = system(formatCommand.c_str());
+        if (formatResult != 0) {
+            throw std::runtime_error("Error formatting the disk.");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
 
  // Function to create a bootable USB drive using dd
  /*
