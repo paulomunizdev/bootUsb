@@ -1,6 +1,6 @@
 /*
  * Title:       bootUsb
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Paulo Muniz
  * GitHub:      https://github.com/paulomunizdev/bootUsb
  * Description: bootUsb is a C++ tool for creating bootable USB drives from ISO files.
