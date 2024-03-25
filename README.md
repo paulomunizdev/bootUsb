@@ -1,4 +1,4 @@
-# bootUsb 0.1.2
+# bootUsb 1.0.0
 
 ## Introduction
 bootUsb is a C++ tool for creating bootable USB drives from ISO files. It lists available disks on the system, allowing the user to choose one for creating the bootable drive, and then uses the `dd` command to perform the operation.
